@@ -1,0 +1,26 @@
+sections:
+  - label: "**概述** Overview"
+    hint: "2–3 sentences"
+  - label: "**核心觀點** Key Points"
+    hint: "bulleted list"
+  - label: "**內容詳述** Detailed Breakdown"
+    hint: "organized by theme or time segment"
+  - label: "**重要引言或案例** Notable Quotes / Examples"
+    hint: "if any"
+  - label: "**行動建議與結論** Action Items / Takeaways"
+    hint: "concrete suggestions for the audience"
+
+user_template: |
+  {context_block}Below is the full transcript of a recorded session.
+  The audio may contain: {source_langs}.
+
+  === TRANSCRIPT START ===
+  {transcript}
+  === TRANSCRIPT END ===
+
+  {lang_instruction}
+  Please write a well-structured summary with the following sections:
+
+  {section_list}
+
+  The summary should be clear, concrete, and useful as a standalone reference document.

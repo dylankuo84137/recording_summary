@@ -1,0 +1,12 @@
+instructions: |
+  Please transcribe ALL spoken content completely and accurately:
+  - Keep each language in its original form (do not translate)
+  - If multiple languages appear together, transcribe both
+  - Label speaker turns if distinguishable (e.g. [EN] / [ZH])
+  Output only the transcript text, no headings or commentary.
+
+user_template: |
+  {context_block}This is audio segment {chunk_index} starting at {timestamp}.
+  The audio may contain: {source_langs}.
+
+  {instructions}

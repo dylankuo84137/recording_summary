@@ -1,0 +1,17 @@
+# Environment
+.env
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Pipeline intermediates
+combined.mp4
+audio.m4a
+audio_chunks/
+full_transcript.txt
+summary.md
+*.filelist.txt

@@ -11,7 +11,8 @@ AUDIO_EXTENSIONS = (".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg", ".opus", ".
 # ─── Shell helpers ────────────────────────────────────────────────────────────
 
 def run(cmd, check=True, capture=False):
-    result = subprocess.run(cmd, capture_output=capture, text=capture, check=check)
+    result = subprocess.run(cmd, capture_output=capture, text=capture, check=check,
+                            stdin=subprocess.DEVNULL)
     return result
 
 
@@ -104,10 +105,14 @@ def split_audio(audio_path, chunk_dir, chunk_seconds):
     num_chunks = math.ceil(duration / chunk_seconds)
     print(f"  Duration: {duration:.1f}s → {num_chunks} chunks of {chunk_seconds}s")
 
+    src_ext = os.path.splitext(audio_path)[1].lower()
+    # M4A container only supports AAC; use source extension when possible
+    chunk_ext = src_ext if src_ext in (".mp3", ".aac", ".flac", ".wav", ".ogg") else ".m4a"
+
     chunks = []
     for i in range(num_chunks):
         start = i * chunk_seconds
-        out = os.path.join(chunk_dir, f"chunk_{i:03d}.m4a")
+        out = os.path.join(chunk_dir, f"chunk_{i:03d}{chunk_ext}")
         if not os.path.exists(out):
             run(["ffmpeg", "-y", "-i", audio_path,
                  "-ss", str(start), "-t", str(chunk_seconds),

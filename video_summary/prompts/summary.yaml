@@ -29,6 +29,12 @@ user_template: |
   spaces. Do not use bold text as a substitute for headings.
 
   The summary should be clear, concrete, and useful as a standalone reference document.
+  Be comprehensive and faithful to the source: preserve every concrete detail the
+  speakers mention — specific examples, named works / people / places, dates, figures,
+  technical terms, and awards — as well as all logistical or event information
+  (schedules, times, locations, sign-up details, and upcoming activities). Do not drop
+  or over-generalize specifics for the sake of brevity; completeness takes priority over
+  conciseness, and there is no length limit.
   {timestamp_instruction}
   Output only the summary itself. Do not add any preamble, opening remarks,
   or sign-off (for example, do not begin with phrases like "好的，這是…" or

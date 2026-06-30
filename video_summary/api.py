@@ -2,6 +2,7 @@
 
 import os
 import re
+import time
 import base64
 import requests
 
@@ -42,19 +43,44 @@ def clean_summary(text):
     return "\n".join(lines).strip()
 
 
-def call_api(api_key, model, messages, temperature=0.2):
+def call_api(api_key, model, messages, temperature=0.2, max_retries=4):
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://localhost",
     }
     payload = {"model": model, "messages": messages, "temperature": temperature}
-    resp = requests.post(
-        f"{DEFAULT_BASE_URL}/chat/completions",
-        headers=headers, json=payload, timeout=300,
+
+    last_reason = "unknown error"
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.post(
+                f"{DEFAULT_BASE_URL}/chat/completions",
+                headers=headers, json=payload, timeout=300,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if data.get("error"):
+                last_reason = f"API error: {data['error']}"
+            else:
+                content = data["choices"][0]["message"].get("content")
+                if content and content.strip():
+                    return content
+                # Thinking models (e.g. gemini-2.5-pro) occasionally return null
+                # content with a normal finish_reason — the text never lands in
+                # the content field. Retry to get a usable completion.
+                finish = data["choices"][0].get("finish_reason")
+                last_reason = f"empty content (finish_reason={finish})"
+        except requests.RequestException as e:
+            last_reason = f"request failed: {e}"
+
+        if attempt < max_retries:
+            print(f"    [retry {attempt}/{max_retries - 1}] {last_reason}", flush=True)
+            time.sleep(2 * attempt)
+
+    raise RuntimeError(
+        f"OpenRouter call failed after {max_retries} attempts: {last_reason}"
     )
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"]
 
 
 def transcribe_chunk(api_key, model, chunk_index, start_sec, filepath, context, source_langs):

@@ -43,6 +43,12 @@ Or create a `.env` file in the project root or current directory:
 OPENROUTER_API_KEY=your_key_here
 ```
 
+You can also set a default model in the same `.env` (overridden by `--model`):
+
+```
+OPENROUTER_MODEL=google/gemini-2.5-pro
+```
+
 ## Usage
 
 ```bash
@@ -75,7 +81,7 @@ python3 video_to_summary.py /path/to/recordings --no-transcribe
 |--------|---------|-------------|
 | `video_dir` | `.` | Directory containing video/audio source files |
 | `--api-key` | env var | OpenRouter API key (or use `OPENROUTER_API_KEY`) |
-| `--model` | `google/gemini-2.5-flash` | OpenRouter model to use |
+| `--model` | `$OPENROUTER_MODEL`, else `google/gemini-2.5-flash` | OpenRouter model to use |
 | `--chunk` | `600` | Audio chunk size in seconds |
 | `--source-lang` | `English,Traditional Chinese` | Languages spoken in the audio |
 | `--summary-lang` | `Traditional Chinese` | Output language for the summary |

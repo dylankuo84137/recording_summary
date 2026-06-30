@@ -83,8 +83,8 @@ def parse_args():
                    help="Directory with video/audio files (default: current directory)")
     p.add_argument("--api-key",       default=os.environ.get("OPENROUTER_API_KEY", ""),
                    help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
-    p.add_argument("--model",         default=DEFAULT_MODEL,
-                   help=f"Model to use (default: {DEFAULT_MODEL})")
+    p.add_argument("--model",         default=os.environ.get("OPENROUTER_MODEL", DEFAULT_MODEL),
+                   help=f"Model to use (default: $OPENROUTER_MODEL, else {DEFAULT_MODEL})")
     p.add_argument("--chunk",         type=int, default=DEFAULT_CHUNK_SEC, metavar="SECS",
                    help=f"Audio chunk size in seconds (default: {DEFAULT_CHUNK_SEC})")
     p.add_argument("--source-lang",   default="English,Traditional Chinese",

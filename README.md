@@ -151,3 +151,7 @@ python3 -m video_summary.gdoc summary.md > summary.gdoc.md
 
 Paste the result (or import the file) into Google Docs to get a proper title,
 metadata, and heading outline.
+
+## License
+
+Released under the [MIT License](LICENSE).

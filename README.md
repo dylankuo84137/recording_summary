@@ -8,14 +8,15 @@ An end-to-end pipeline for transcribing and summarizing video/audio recordings u
 - Extracts audio from video files using FFmpeg
 - Splits audio into manageable chunks for transcription
 - Transcribes each chunk with multilingual support (default: English + Traditional Chinese)
-- Generates a structured bilingual markdown summary
+- Generates a structured bilingual markdown summary with Obsidian-compatible frontmatter
+- Converts the summary into Google Docs-friendly markdown
 
 ## Requirements
 
 **Python dependencies:**
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 **System dependency** (must be installed separately):
@@ -45,7 +46,7 @@ OPENROUTER_API_KEY=your_key_here
 ## Usage
 
 ```bash
-python video_to_summary.py [video_dir] [options]
+python3 video_to_summary.py [video_dir] [options]
 ```
 
 `video_dir` is the directory containing your video or audio files. Defaults to the current directory.
@@ -56,16 +57,16 @@ When run, the pipeline will interactively prompt you for recording context (titl
 
 ```bash
 # Summarize videos in current directory
-python video_to_summary.py
+python3 video_to_summary.py
 
 # Summarize videos in a specific directory
-python video_to_summary.py /path/to/recordings
+python3 video_to_summary.py /path/to/recordings
 
 # Use a specific model and output language
-python video_to_summary.py /path/to/recordings --model google/gemini-2.5-pro --summary-lang English
+python3 video_to_summary.py /path/to/recordings --model google/gemini-2.5-pro --summary-lang English
 
 # Resume from existing transcript (skip transcription step)
-python video_to_summary.py /path/to/recordings --no-transcribe
+python3 video_to_summary.py /path/to/recordings --no-transcribe
 ```
 
 ### Options
@@ -78,6 +79,7 @@ python video_to_summary.py /path/to/recordings --no-transcribe
 | `--chunk` | `600` | Audio chunk size in seconds |
 | `--source-lang` | `English,Traditional Chinese` | Languages spoken in the audio |
 | `--summary-lang` | `Traditional Chinese` | Output language for the summary |
+| `--timestamps` | off | Annotate audio timestamps in the Detailed Breakdown |
 | `--output` | `summary.md` | Output filename for the summary |
 | `--work-dir` | `video_dir` | Working directory for intermediate files |
 | `--keep-chunks` | off | Keep intermediate audio chunk files after completion |
@@ -104,6 +106,7 @@ video_summary/
     ├── pipeline.py           # FFmpeg-based media processing
     ├── api.py                # OpenRouter API client
     ├── prompts.py            # Prompt template loader
+    ├── gdoc.py               # Summary markdown → Google Docs converter
     └── prompts/
         ├── transcribe.yaml   # Transcription prompt template
         └── summary.yaml      # Summary structure template
@@ -122,10 +125,29 @@ Intermediate files are stored in the working directory. Audio chunks are deleted
 
 ## Summary Output Format
 
-The generated `summary.md` follows a structured bilingual (Chinese/English) template:
+The generated `summary.md` is Obsidian-friendly: the recording context you entered
+is written as a YAML frontmatter block, followed by a `# Recording Summary` heading,
+the summary body, and a footer noting the model used.
+
+The body follows a structured bilingual (Chinese/English) template, with each
+top-level section as a level-2 (`##`) heading:
 
 1. **概述 / Overview** — 2–3 sentence summary
 2. **核心觀點 / Key Points** — Bulleted list of main ideas
-3. **內容詳述 / Detailed Breakdown** — Organized by theme or time segment
+3. **內容詳述 / Detailed Breakdown** — Organized by theme, one `###` sub-heading per theme (with optional timestamps via `--timestamps`)
 4. **重要引言或案例 / Notable Quotes/Examples** — Key quotes or examples, if any
 5. **行動建議與結論 / Action Items/Takeaways** — Concrete next steps or conclusions
+
+### Converting for Google Docs
+
+Google Docs' Markdown import does not understand YAML frontmatter and only styles
+real Markdown headings. The `gdoc` module rewrites a summary into Google Docs-friendly
+Markdown — lifting the frontmatter into a visible title + metadata block and promoting
+any leftover bold section titles to real headings:
+
+```bash
+python3 -m video_summary.gdoc summary.md > summary.gdoc.md
+```
+
+Paste the result (or import the file) into Google Docs to get a proper title,
+metadata, and heading outline.

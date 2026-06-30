@@ -1,13 +1,13 @@
 sections:
-  - label: "**概述** Overview"
+  - label: "概述 Overview"
     hint: "2–3 sentences"
-  - label: "**核心觀點** Key Points"
+  - label: "核心觀點 Key Points"
     hint: "bulleted list"
-  - label: "**內容詳述** Detailed Breakdown"
-    hint: "organized by theme or time segment"
-  - label: "**重要引言或案例** Notable Quotes / Examples"
+  - label: "內容詳述 Detailed Breakdown"
+    hint: "organized by theme, one '### ' sub-heading per theme"
+  - label: "重要引言或案例 Notable Quotes / Examples"
     hint: "if any"
-  - label: "**行動建議與結論** Action Items / Takeaways"
+  - label: "行動建議與結論 Action Items / Takeaways"
     hint: "concrete suggestions for the audience"
 
 user_template: |
@@ -19,8 +19,18 @@ user_template: |
   === TRANSCRIPT END ===
 
   {lang_instruction}
-  Please write a well-structured summary with the following sections:
+  Please write a well-structured summary. Format each of the following top-level
+  sections as a level-2 Markdown heading (for example "## 概述 Overview"):
 
   {section_list}
 
+  In the 內容詳述 / Detailed Breakdown section, give each theme its own level-3
+  heading ("### "). Use "-" for bullet points and indent nested bullets with two
+  spaces. Do not use bold text as a substitute for headings.
+
   The summary should be clear, concrete, and useful as a standalone reference document.
+  {timestamp_instruction}
+  Output only the summary itself. Do not add any preamble, opening remarks,
+  or sign-off (for example, do not begin with phrases like "好的，這是…" or
+  "Here is the summary:"). Do not wrap the summary in code fences or surround
+  it with horizontal rules (---).

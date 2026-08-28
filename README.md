@@ -9,7 +9,7 @@ An end-to-end pipeline for transcribing and summarizing video/audio recordings u
 - Splits audio into manageable chunks for transcription
 - Transcribes each chunk with multilingual support (default: English + Traditional Chinese)
 - Generates a structured bilingual markdown summary with Obsidian-compatible frontmatter
-- Converts the summary into Google Docs-friendly markdown
+- Converts the summary into Google Docs-friendly markdown, and syncs edits made in Google Docs back to the local file
 
 ## Requirements
 
@@ -113,6 +113,7 @@ video_summary/
     ├── api.py                # OpenRouter API client
     ├── prompts.py            # Prompt template loader
     ├── gdoc.py               # Summary markdown → Google Docs converter
+    ├── gdoc_sync.py          # Google Docs → summary markdown (reverse sync)
     └── prompts/
         ├── transcribe.yaml   # Transcription prompt template
         └── summary.yaml      # Summary structure template
@@ -157,6 +158,50 @@ python3 -m video_summary.gdoc summary.md > summary.gdoc.md
 
 Paste the result (or import the file) into Google Docs to get a proper title,
 metadata, and heading outline.
+
+### Syncing Google Docs edits back
+
+Once a summary lives in Google Docs, `gdoc_sync` pulls edits made there back
+into the local `summary.md`:
+
+```bash
+# first time: point it at the doc; the id is recorded in the frontmatter
+python3 -m video_summary.gdoc_sync summary.md --doc-id 1AbC_dEfGh
+
+# afterwards, the id comes from the file itself
+python3 -m video_summary.gdoc_sync summary.md
+```
+
+It exports the doc as Markdown via the `gws` CLI,
+rebuilds it in the local format, shows a unified diff, and only overwrites
+`summary.md` once you confirm.
+
+| Option | Description |
+|--------|-------------|
+| `path` | Local summary markdown file to update |
+| `--doc-id` | Google Docs file id; recorded as `gdoc_id` in the frontmatter for later runs |
+| `--from-file` | Use an already-exported markdown file instead of calling `gws` |
+| `-y`, `--yes` | Apply without confirming |
+
+The document's metadata block is the source of truth: renaming a label in
+Google Docs renames the frontmatter field, adding one adds a field, and
+removing one removes it. Labels the pipeline knows keep their canonical keys
+(`**講者：**` ↔ `speaker`); any other label becomes a field under its own name,
+and `gdoc.py` renders those back out on the next upload. The `gdoc_id` key is
+the one field never rendered into the document.
+
+Google Docs does not round-trip Markdown perfectly. It flattens every list to a
+single level and re-markers it, puts a blank line under each heading and around
+each list, backslash-escapes Markdown punctuation, and swallows the italic
+generator footer. `gdoc_sync` repairs all of these against the local file —
+list nesting is restored by diffing the bullet text, so an edited bullet keeps
+its place in the outline — leaving a diff of only what you actually changed.
+
+## Tests
+
+```bash
+python3 -m unittest discover -s tests
+```
 
 ## License
 

@@ -19,6 +19,10 @@ import sys
 
 import yaml
 
+# frontmatter keys that never appear in the rendered metadata block: the title
+# becomes the document heading, and gdoc_id is bookkeeping for gdoc_sync
+HIDDEN_KEYS = ("title", "gdoc_id")
+
 # frontmatter key -> label shown in the rendered Google Docs metadata block
 META_LABELS = [
     ("speaker",  "講者"),
@@ -46,7 +50,13 @@ def promote_headings(body):
     Promoting that bullet to a ``###`` heading orphans the nested points (a
     4-space indent renders as a code block), so within that section we also
     dedent the detail bullets back up by one level.
+
+    Summaries written since the prompt started asking for real headings already
+    give each theme its own ``###``; there a bold bullet is a sub-point, not a
+    theme, and promoting it would flatten the outline.
     """
+    has_own_themes = re.search(r"^###\s", body, re.MULTILINE) is not None
+
     out = []
     in_detail = False
     for line in body.split("\n"):
@@ -60,7 +70,7 @@ def promote_headings(body):
             out.append(f"## {m.group(1).strip()}")
             continue
 
-        if in_detail:
+        if in_detail and not has_own_themes:
             # Sub-theme: a top-level bullet that is *only* bold text ->
             # "*   **論壇背景與高中校舍願景**" -> "### 論壇背景與高中校舍願景"
             m = re.match(r"^[*-]\s+\*\*(.+?)\*\*\s*$", line)
@@ -82,7 +92,8 @@ def to_gdoc_markdown(md):
     # Drop the generic "# Recording Summary" H1 and the model's repeated bold
     # title line; the document title comes from the frontmatter instead.
     body = re.sub(r"^#\s+Recording Summary\s*\n+", "", body.lstrip())
-    body = re.sub(r"^\*\*[^\n]+\*\*\s*\n+", "", body, count=1)
+    # ...but a numbered section title ("**1. 概述**") is a section, not a title.
+    body = re.sub(r"^\*\*(?!\d+\.)[^\n]+\*\*\s*\n+", "", body, count=1)
     body = promote_headings(body.strip())
 
     parts = []
@@ -92,7 +103,11 @@ def to_gdoc_markdown(md):
     # Each metadata field on its own line: a trailing two-space hard break keeps
     # them as one tight block (a single newline would collapse into one line on
     # Google Docs import).
-    meta_lines = [f"**{label}：** {meta[key]}" for key, label in META_LABELS if meta.get(key)]
+    # Follow the frontmatter's own order so the block survives a round trip,
+    # and render keys the pipeline does not know about under their own name.
+    labels = dict(META_LABELS)
+    meta_lines = [f"**{labels.get(key, key)}：** {value}"
+                  for key, value in meta.items() if key not in HIDDEN_KEYS and value]
     if meta_lines:
         parts.append("  \n".join(meta_lines))
     parts.append(body)

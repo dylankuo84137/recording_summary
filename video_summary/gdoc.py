@@ -33,13 +33,61 @@ META_LABELS = [
 ]
 
 
+FRONTMATTER_RE = re.compile(r"^﻿?---\n(?P<yaml>.*?)\n---\n+", re.DOTALL)
+
+
+def dump_frontmatter(meta):
+    """Serialize frontmatter the one way the whole project writes it.
+
+    The pipeline writes summaries with this and gdoc_sync rewrites them with
+    it, so the two have to stay the same call — a differing ``width`` or sort
+    order would make every synced file drift from what the pipeline produces.
+    """
+    if not meta:
+        return ""
+    return yaml.safe_dump(
+        meta, allow_unicode=True, sort_keys=False, width=100000,
+    ).strip()
+
+
+def is_rendered(key, value):
+    """Whether a frontmatter field reaches the uploaded document.
+
+    A field with no value has nothing to show, so it is left out — but "left
+    out" must not read as "deleted" on the way back, which is why gdoc_sync
+    carries these keys forward the way it carries ``gdoc_id``. Note that ``0``
+    and ``False`` are values, not emptiness.
+    """
+    return key not in HIDDEN_KEYS and value is not None and value != ""
+
+
 def split_frontmatter(md):
     """Return (frontmatter_dict, body) — empty dict if there is no frontmatter."""
-    m = re.match(r"^﻿?---\n(.*?)\n---\n+", md, re.DOTALL)
+    m = FRONTMATTER_RE.match(md)
     if not m:
         return {}, md
-    data = yaml.safe_load(m.group(1)) or {}
+    data = yaml.safe_load(m.group("yaml")) or {}
     return data, md[m.end():]
+
+
+def _is_detail_section(line):
+    return "內容詳述" in line or "Detailed Breakdown" in line
+
+
+def _detail_has_headings(body):
+    """True when the Detailed Breakdown already gives each theme its own "###".
+
+    Scoped to that section on purpose: a single "###" anywhere else in a legacy
+    summary must not switch off bold-theme promotion for the whole document.
+    """
+    in_detail = False
+    for line in body.split("\n"):
+        if re.match(r"^##\s+", line) or re.match(r"^\*\*\d+\.", line):
+            in_detail = _is_detail_section(line)
+            continue
+        if in_detail and re.match(r"^###\s", line):
+            return True
+    return False
 
 
 def promote_headings(body):
@@ -55,14 +103,14 @@ def promote_headings(body):
     give each theme its own ``###``; there a bold bullet is a sub-point, not a
     theme, and promoting it would flatten the outline.
     """
-    has_own_themes = re.search(r"^###\s", body, re.MULTILINE) is not None
+    has_own_themes = _detail_has_headings(body)
 
     out = []
     in_detail = False
     for line in body.split("\n"):
         # Track which top-level section we are in (bold or already a heading).
         if re.match(r"^##\s+", line) or re.match(r"^\*\*\d+\.", line):
-            in_detail = "內容詳述" in line or "Detailed Breakdown" in line
+            in_detail = _is_detail_section(line)
 
         # Top-level numbered section, e.g. "**1. 概述**" -> "## 概述"
         m = re.match(r"^\*\*\d+\.\s*(.+?)\*\*\s*$", line)
@@ -107,7 +155,7 @@ def to_gdoc_markdown(md):
     # and render keys the pipeline does not know about under their own name.
     labels = dict(META_LABELS)
     meta_lines = [f"**{labels.get(key, key)}：** {value}"
-                  for key, value in meta.items() if key not in HIDDEN_KEYS and value]
+                  for key, value in meta.items() if is_rendered(key, value)]
     if meta_lines:
         parts.append("  \n".join(meta_lines))
     parts.append(body)

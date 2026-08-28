@@ -4,8 +4,6 @@ import os
 import sys
 import argparse
 
-import yaml
-
 from .pipeline import (
     find_videos, find_audios,
     concat_videos, concat_audios,
@@ -13,6 +11,7 @@ from .pipeline import (
     banner, hr,
 )
 from .api import transcribe_all, generate_summary
+from .gdoc import dump_frontmatter
 
 DEFAULT_MODEL     = "google/gemini-2.5-flash"
 DEFAULT_CHUNK_SEC = 600
@@ -68,11 +67,7 @@ def format_context_for_ai(answers):
 
 def format_context_frontmatter(answers):
     """Obsidian-compatible YAML frontmatter block (without the surrounding ---)."""
-    if not answers:
-        return ""
-    return yaml.safe_dump(
-        answers, allow_unicode=True, sort_keys=False, width=100000,
-    ).strip()
+    return dump_frontmatter(answers)
 
 
 def parse_args():

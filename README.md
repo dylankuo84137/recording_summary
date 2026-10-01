@@ -1,6 +1,6 @@
-# video_summary
+# recording_notes
 
-An end-to-end pipeline for transcribing and summarizing video/audio recordings using AI via the OpenRouter API.
+An end-to-end pipeline that turns video/audio recordings into structured notes using AI via the OpenRouter API — transcribed, summarized, and ready to publish to Google Docs, with edits made there synced back.
 
 ## Features
 
@@ -52,7 +52,7 @@ OPENROUTER_MODEL=google/gemini-2.5-pro
 ## Usage
 
 ```bash
-python3 video_to_summary.py [video_dir] [options]
+python3 recording_to_notes.py [video_dir] [options]
 ```
 
 `video_dir` is the directory containing your video or audio files. Defaults to the current directory.
@@ -63,16 +63,16 @@ When run, the pipeline will interactively prompt you for recording context (titl
 
 ```bash
 # Summarize videos in current directory
-python3 video_to_summary.py
+python3 recording_to_notes.py
 
 # Summarize videos in a specific directory
-python3 video_to_summary.py /path/to/recordings
+python3 recording_to_notes.py /path/to/recordings
 
 # Use a specific model and output language
-python3 video_to_summary.py /path/to/recordings --model google/gemini-2.5-pro --summary-lang English
+python3 recording_to_notes.py /path/to/recordings --model google/gemini-2.5-pro --summary-lang English
 
 # Resume from existing transcript (skip transcription step)
-python3 video_to_summary.py /path/to/recordings --no-transcribe
+python3 recording_to_notes.py /path/to/recordings --no-transcribe
 ```
 
 ### Options
@@ -102,11 +102,11 @@ python3 video_to_summary.py /path/to/recordings --no-transcribe
 ## Project Structure
 
 ```
-video_summary/
-├── video_to_summary.py       # Entry point
+recording_notes/
+├── recording_to_notes.py     # Entry point
 ├── requirements.txt
 ├── .gitignore
-└── video_summary/            # Main package
+└── recording_notes/          # Main package
     ├── __init__.py
     ├── cli.py                # CLI argument parsing and pipeline orchestration
     ├── pipeline.py           # FFmpeg-based media processing
@@ -153,7 +153,7 @@ Markdown — lifting the frontmatter into a visible title + metadata block and p
 any leftover bold section titles to real headings:
 
 ```bash
-python3 -m video_summary.gdoc summary.md > summary.gdoc.md
+python3 -m recording_notes.gdoc summary.md > summary.gdoc.md
 ```
 
 Paste the result (or import the file) into Google Docs to get a proper title,
@@ -166,10 +166,10 @@ into the local `summary.md`:
 
 ```bash
 # first time: point it at the doc; the id is recorded in the frontmatter
-python3 -m video_summary.gdoc_sync summary.md --doc-id 1AbC_dEfGh
+python3 -m recording_notes.gdoc_sync summary.md --doc-id 1AbC_dEfGh
 
 # afterwards, the id comes from the file itself
-python3 -m video_summary.gdoc_sync summary.md
+python3 -m recording_notes.gdoc_sync summary.md
 ```
 
 It exports the doc as Markdown via the `gws` CLI,

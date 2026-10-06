@@ -11,7 +11,7 @@ raw ``---`` block as text) and it only styles real Markdown headings (``#``/``##
 so the converted Google Doc gets a proper title, metadata, and heading outline.
 
 Usage:
-    python3 -m recording_notes.gdoc input.md > input.gdoc.md
+    python3 -m recording_summary.gdoc input.md > input.gdoc.md
 """
 
 import re

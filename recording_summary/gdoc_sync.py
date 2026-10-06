@@ -1,6 +1,6 @@
 """Pull a Google Doc back down and turn it into the Obsidian-flavored summary.md.
 
-This is the inverse of :mod:`recording_notes.gdoc`: it takes the Markdown that
+This is the inverse of :mod:`recording_summary.gdoc`: it takes the Markdown that
 Google Docs exports and rebuilds the local summary — YAML frontmatter, the
 ``# Recording Summary`` heading, and the generator footer.
 """
@@ -593,7 +593,7 @@ def sync(path, doc_id=None, from_file=None, assume_yes=False,
 
 def main(argv=None):
     p = argparse.ArgumentParser(
-        prog="python3 -m recording_notes.gdoc_sync",
+        prog="python3 -m recording_summary.gdoc_sync",
         description="Pull edits made in Google Docs back into the local summary.md",
     )
     p.add_argument("path", help="Local summary markdown file to update")

@@ -86,8 +86,8 @@ python3 recording_to_summary.py /path/to/recordings --no-transcribe
 | `--source-lang` | `English,Traditional Chinese` | Languages spoken in the audio |
 | `--summary-lang` | `Traditional Chinese` | Output language for the summary |
 | `--timestamps` | off | Annotate audio timestamps in the Detailed Breakdown |
-| `--output` | `summary.md` | Output filename for the summary |
-| `--work-dir` | `video_dir` | Working directory for intermediate files |
+| `--output` | `summary.md` | Output filename for the summary (written to `video_dir`, next to the source files) |
+| `--work-dir` | `video_dir` | Working directory for intermediate files (the summary is not affected) |
 | `--keep-chunks` | off | Keep intermediate audio chunk files after completion |
 | `--no-concat` | off | Skip concat step; use existing `combined.mp4` |
 | `--no-extract` | off | Skip audio extraction; use existing `audio.m4a` |

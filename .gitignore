@@ -15,3 +15,6 @@ audio_chunks/
 full_transcript.txt
 summary.md
 *.filelist.txt
+
+# Local working output
+work/

@@ -99,7 +99,7 @@ def parse_args():
     p.add_argument("--output",        default="summary.md",
                    help="Output summary filename (default: summary.md)")
     p.add_argument("--work-dir",      default="",
-                   help="Working directory for intermediate files (default: VIDEO_DIR)")
+                   help="Working directory for intermediate files; the summary is always written to VIDEO_DIR (default: VIDEO_DIR)")
     return p.parse_args()
 
 
@@ -116,7 +116,7 @@ def main():
     audio_file      = os.path.join(work_dir, "audio.m4a")
     chunk_dir       = os.path.join(work_dir, "audio_chunks")
     transcript_file = os.path.join(work_dir, "full_transcript.txt")
-    output_file     = os.path.join(work_dir, args.output)
+    output_file     = os.path.join(video_dir, args.output)  # summary lives beside the source files
 
     source_langs = [s.strip() for s in args.source_lang.split(",")]
     summary_lang = args.summary_lang
